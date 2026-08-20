@@ -1,0 +1,9 @@
+# build artifacts
+build/
+
+# test output / benchmark corpus (kept local, not pushed)
+output*/
+*.log
+
+# macOS
+.DS_Store
