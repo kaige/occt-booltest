@@ -5,5 +5,8 @@ build/
 output*/
 *.log
 
+# packaged corpus zips (published via GitHub Release, not git)
+corpus/
+
 # macOS
 .DS_Store
