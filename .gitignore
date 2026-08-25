@@ -10,3 +10,7 @@ corpus/
 
 # macOS
 .DS_Store
+corpus-index/bottle.step
+
+# ad-hoc STEP inputs / outputs at repo root
+/*.step
