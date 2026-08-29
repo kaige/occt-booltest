@@ -29,6 +29,14 @@ target_link_libraries(boolstep PRIVATE ${OCCT_LIBS_CORE})
 set_target_properties(boolstep PROPERTIES
     BUILD_RPATH "${OCCT_BUILD}/mac64/clang/lib")
 
+# pure corpus runner: read STP pair -> boolean -> record status (no Qt)
+add_executable(boolrun run_main.cpp common.cpp)
+target_include_directories(boolrun PRIVATE ${OCCT_BUILD}/include/opencascade)
+target_link_directories(boolrun PRIVATE ${OCCT_BUILD}/mac64/clang/lib)
+target_link_libraries(boolrun PRIVATE ${OCCT_LIBS_CORE})
+set_target_properties(boolrun PROPERTIES
+    BUILD_RPATH "${OCCT_BUILD}/mac64/clang/lib")
+
 # prepare the STEP input model via native modeling (tutorial bottle)
 add_executable(mkbottle mkbottle.cpp common.cpp)
 target_include_directories(mkbottle PRIVATE ${OCCT_BUILD}/include/opencascade)

@@ -46,6 +46,39 @@ result (`body4.step`); on failure the pair is kept with `info.txt` and
 the run reports it. `boolstep` links no Qt — it is a short, readable,
 file-in/file-out tester.
 
+### Pure runner (`boolrun`)
+
+A third binary with **no modeling at all**: it replays archived test
+cases and only records status. A *case* is any directory holding a
+`body1.step` + `body3.step` pair (exactly what every `booltest` /
+`boolstep` iteration archives); failed case dirs also carry `info.txt`
+with the outcome recorded at generation time.
+
+    读入 STP ×2 → 布尔 ∩ → 记录测试状态
+
+Per case it re-reads the pair, re-runs `BRepAlgoAPI_Common` with the
+same validation (`0 < V ≤ min(Vin1, Vin3)`), and compares the outcome
+against the archived expectation (`info.txt` says `status: FAILED` ⇒
+reproduction must fail too; otherwise it must pass). Any flip is
+reported as a MISMATCH and makes the exit code 1 — that is the
+cross-run nondeterminism net.
+
+```bash
+# scan a tree (or a single case dir) and replay everything
+./build/boolrun output_step/iterations --out output_boolrun_full
+
+# repeat each case N times in-process; inconsistent results = FLAKY
+./build/boolrun <root>... --repeat 5
+
+# skip huge models instead of grinding (same 4000-face guard as
+# boolstep; 0 disables)
+./build/boolrun <root>... --max-faces 4000
+```
+
+Outputs `boolrun_summary.json` / `boolrun_summary.csv` (per-run status,
+volumes, timing, error text, match flag). No Qt, nothing is written
+back as geometry.
+
 ## Build & run
 
 ```bash
