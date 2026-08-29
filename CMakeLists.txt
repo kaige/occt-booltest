@@ -37,6 +37,14 @@ target_link_libraries(boolrun PRIVATE ${OCCT_LIBS_CORE})
 set_target_properties(boolrun PROPERTIES
     BUILD_RPATH "${OCCT_BUILD}/mac64/clang/lib")
 
+# standalone offscreen shape renderer: STEP -> PNG (Qt offscreen, no boolean)
+add_executable(shot shot.cpp common.cpp)
+target_include_directories(shot PRIVATE ${OCCT_BUILD}/include/opencascade)
+target_link_directories(shot PRIVATE ${OCCT_BUILD}/mac64/clang/lib)
+target_link_libraries(shot PRIVATE Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets ${OCCT_LIBS_CORE})
+set_target_properties(shot PROPERTIES
+    BUILD_RPATH "${OCCT_BUILD}/mac64/clang/lib")
+
 # prepare the STEP input model via native modeling (tutorial bottle)
 add_executable(mkbottle mkbottle.cpp common.cpp)
 target_include_directories(mkbottle PRIVATE ${OCCT_BUILD}/include/opencascade)
