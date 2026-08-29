@@ -54,8 +54,12 @@
 // ============================================================
 // MakeBottle — verbatim from the OCCT tutorial (dox/tutorial)
 // ============================================================
-TopoDS_Shape MakeBottle(double theWidth, double theHeight,
-                        double theThickness)
+// Shared tutorial pipeline (verbatim through the threading).
+//   MakeBottle      = tutorial behavior: body hollowed (wall T/50)
+//   MakeBottleSolid = same geometry, body kept solid (no hollowing)
+static void bottleParts(double theWidth, double theHeight,
+                        double theThickness,
+                        TopoDS_Shape& aBodyOut, TopoDS_Shape& aThreadingOut)
 {
     gp_Pnt aPnt1(-theWidth / 2., 0, 0);
     gp_Pnt aPnt2(-theWidth / 2., -theThickness / 4., 0);
@@ -111,27 +115,6 @@ TopoDS_Shape MakeBottle(double theWidth, double theHeight,
     if (aFuser.IsDone())
         aBody = aFuser.Shape();
 
-    TopoDS_Face   aFaceToRemove;
-    double aZMax = -1;
-    for(TopExp_Explorer aFaceExplorer(aBody, TopAbs_FACE); aFaceExplorer.More(); aFaceExplorer.Next()){
-        TopoDS_Face aFace = TopoDS::Face(aFaceExplorer.Current());
-        occ::handle<Geom_Surface> aSurface = BRep_Tool::Surface(aFace);
-        if(!aSurface.IsNull() && aSurface->DynamicType() == STANDARD_TYPE(Geom_Plane)){
-            occ::handle<Geom_Plane> aPlane = occ::down_cast<Geom_Plane>(aSurface);
-            if (!aPlane.IsNull()) {
-                gp_Pnt aPnt = aPlane->Location();
-                double aZ   = aPnt.Z();
-                if(aZ > aZMax){ aZMax = aZ; aFaceToRemove = aFace; }
-            }
-        }
-    }
-
-    NCollection_List<TopoDS_Shape> aFacesToRemove;
-    aFacesToRemove.Append(aFaceToRemove);
-    BRepOffsetAPI_MakeThickSolid aSolidMaker;
-    aSolidMaker.MakeThickSolidByJoin(aBody, aFacesToRemove, -theThickness / 50, 1.e-3);
-    aBody = aSolidMaker.Shape();
-
     occ::handle<Geom_CylindricalSurface> aCyl1 = new Geom_CylindricalSurface(neckAx2, aNeckRadius * 0.99);
     occ::handle<Geom_CylindricalSurface> aCyl2 = new Geom_CylindricalSurface(neckAx2, aNeckRadius * 1.05);
 
@@ -164,6 +147,52 @@ TopoDS_Shape MakeBottle(double theWidth, double theHeight,
     aTool.AddWire(aThreadingWire2);
     aTool.CheckCompatibility(false);
     TopoDS_Shape aThreading = aTool.Shape();
+
+    aBodyOut = aBody;
+    aThreadingOut = aThreading;
+}
+
+// Solid variant: identical geometry, body NOT hollowed.
+TopoDS_Shape MakeBottleSolid(double theWidth, double theHeight,
+                             double theThickness)
+{
+    TopoDS_Shape aBody, aThreading;
+    bottleParts(theWidth, theHeight, theThickness, aBody, aThreading);
+    TopoDS_Compound aRes;
+    BRep_Builder aBuilder;
+    aBuilder.MakeCompound(aRes);
+    aBuilder.Add(aRes, aBody);
+    aBuilder.Add(aRes, aThreading);
+    return aRes;
+}
+
+// Tutorial bottle: body hollowed via MakeThickSolidByJoin (wall = T/50).
+TopoDS_Shape MakeBottle(double theWidth, double theHeight,
+                        double theThickness)
+{
+    TopoDS_Shape aBody, aThreading;
+    bottleParts(theWidth, theHeight, theThickness, aBody, aThreading);
+
+    TopoDS_Face   aFaceToRemove;
+    double aZMax = -1;
+    for(TopExp_Explorer aFaceExplorer(aBody, TopAbs_FACE); aFaceExplorer.More(); aFaceExplorer.Next()){
+        TopoDS_Face aFace = TopoDS::Face(aFaceExplorer.Current());
+        occ::handle<Geom_Surface> aSurface = BRep_Tool::Surface(aFace);
+        if(!aSurface.IsNull() && aSurface->DynamicType() == STANDARD_TYPE(Geom_Plane)){
+            occ::handle<Geom_Plane> aPlane = occ::down_cast<Geom_Plane>(aSurface);
+            if (!aPlane.IsNull()) {
+                gp_Pnt aPnt = aPlane->Location();
+                double aZ   = aPnt.Z();
+                if(aZ > aZMax){ aZMax = aZ; aFaceToRemove = aFace; }
+            }
+        }
+    }
+
+    NCollection_List<TopoDS_Shape> aFacesToRemove;
+    aFacesToRemove.Append(aFaceToRemove);
+    BRepOffsetAPI_MakeThickSolid aSolidMaker;
+    aSolidMaker.MakeThickSolidByJoin(aBody, aFacesToRemove, -theThickness / 50, 1.e-3);
+    aBody = aSolidMaker.Shape();
 
     TopoDS_Compound aRes;
     BRep_Builder aBuilder;

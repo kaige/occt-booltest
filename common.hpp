@@ -12,6 +12,8 @@
 
 // --- modeling: the OCCT tutorial bottle (verbatim) ---
 TopoDS_Shape MakeBottle(double theWidth, double theHeight, double theThickness);
+// Same geometry, body kept SOLID (no MakeThickSolidByJoin hollowing)
+TopoDS_Shape MakeBottleSolid(double theWidth, double theHeight, double theThickness);
 
 // --- geometry queries ---
 double shapeVolume(const TopoDS_Shape& s);
