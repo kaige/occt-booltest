@@ -58,3 +58,11 @@ target_include_directories(diag PRIVATE ${OCCT_BUILD}/include/opencascade)
 target_link_directories(diag PRIVATE ${OCCT_BUILD}/mac64/clang/lib)
 target_link_libraries(diag PRIVATE TKernel TKMath TKG2d TKG3d TKGeomBase TKGeomAlgo TKBRep TKTopAlgo TKPrim TKBO TKBool TKFillet TKOffset TKShHealing TKMesh)
 set_target_properties(diag PROPERTIES BUILD_RPATH "${OCCT_BUILD}/mac64/clang/lib")
+
+# minimal repro for small-angle self-intersection degeneracy
+add_executable(smallangle_diag smallangle_diag.cpp common.cpp)
+target_include_directories(smallangle_diag PRIVATE ${OCCT_BUILD}/include/opencascade)
+target_link_directories(smallangle_diag PRIVATE ${OCCT_BUILD}/mac64/clang/lib)
+target_link_libraries(smallangle_diag PRIVATE ${OCCT_LIBS_CORE})
+set_target_properties(smallangle_diag PROPERTIES
+    BUILD_RPATH "${OCCT_BUILD}/mac64/clang/lib")
